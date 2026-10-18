@@ -13,14 +13,14 @@ jobs:
       CARGO_BUILD_JOBS: '1'
       CARGO_TERM_COLOR: always
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           persist-credentials: false
       - name: Rust toolchain
         shell: pwsh
         run: |
-          rustup toolchain install stable --profile minimal --component rustfmt --component clippy --target i686-pc-windows-msvc
-          rustup default stable
+          rustup toolchain install 1.96.0 --profile minimal --component rustfmt --component clippy --target i686-pc-windows-msvc
+          rustup default 1.96.0
       - name: Format
         run: cargo fmt --all -- --check
       - name: Default build
@@ -31,6 +31,9 @@ jobs:
         run: cargo test --locked --manifest-path providers/luajit/Cargo.toml --target i686-pc-windows-msvc
       - name: Clippy
         run: cargo clippy --workspace --all-targets --locked --target i686-pc-windows-msvc --features windower-runtime/game-thread-probe,windower-runtime/client-windowing,windower-runtime/isolated-probe -- -D warnings
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '26.5.0'
       - name: Player interface format and build
         working-directory: ui/player-preview
         shell: pwsh
