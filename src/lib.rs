@@ -24,3 +24,6 @@ pub mod overlay;
 pub mod package_editor;
 pub mod packages;
 pub mod packet_replay;
+
+pub mod player;
+pub mod player_host;

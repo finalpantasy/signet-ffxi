@@ -55,3 +55,13 @@ sans-serif labels, teal actions, small radii, and minimal copy. It loads no scen
 artwork. The prior concept files remain historical and are not the current design.
 See design/DESIGN.md for the built system. CSS translucency is a browser preview;
 native Windows backdrop integration is not implemented by this frontend.
+
+## Native player adapter
+
+The same built UI can connect to native versioned profiles, package inspection
+and an owned capture-only addon host through the loopback `player_server` binary.
+Its native mode keeps saved selections separate from running addon state and
+preserves unsaved display drafts through failures and concurrent reads. Game Play
+is unavailable. See [the native contract](../../docs/PLAYER_NATIVE_CONTRACT.md)
+for startup, persistence, recovery and test instructions. Static preview behavior
+remains available without a native server.

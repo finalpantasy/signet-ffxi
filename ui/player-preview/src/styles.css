@@ -689,3 +689,27 @@ code {
     background: HighlightText;
   }
 }
+.native-player form > .primary {
+  margin-top: 12px;
+}
+.native-player .quiet-note {
+  margin-top: 12px;
+}
+.native-player .setting-row .button-row {
+  margin-top: 0;
+}
+.native-player .setting-row > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.native-player .setting-row .button-row {
+  justify-content: end;
+}
+@media (max-width: 600px) {
+  .native-player .setting-row {
+    flex-wrap: wrap;
+  }
+  .native-player .setting-row .button-row {
+    justify-content: start;
+  }
+}
