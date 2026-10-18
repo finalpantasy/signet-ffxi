@@ -76,7 +76,7 @@ components:
     width: "min(460px, calc(100% - 32px))"
 ---
 
-# Design System: FFXI Launcher and Runtime
+# Design System: Signet for FFXI
 
 ## Overview
 
