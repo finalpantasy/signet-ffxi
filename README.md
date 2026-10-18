@@ -34,6 +34,9 @@ The native package workbench remains available:
 - Selected reload rollback, neighbor continuity and pending-work cancellation.
 - Offline package staging, dependency checks, activation, restore and profile preparation.
 - Synthetic fixtures for protocol, input, rendering and plugin boundaries.
+- Default-on background caching for standard DirectInput controller discovery;
+  see [scope and verification limits](docs/CONTROLLER_DISCOVERY.md). The native
+  build/launch hold remains in effect, and in-game hitch reduction is unverified.
 
 A private local-server test campaign entered FFXI in four owned clients, verified
 48 lifecycle requests and six server-confirmed addon commands, and closed its
