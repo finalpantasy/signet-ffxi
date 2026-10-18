@@ -1,0 +1,16 @@
+/target/
+/providers/luajit/target/
+/local/
+/private/
+.env
+.env.*
+*.pfx
+*.p12
+*.key
+*.dmp
+*.lnk
+__pycache__/
+/ui/player-preview/design/PROMPTS.md
+/ui/player-preview/design/primary-concept-v1.png
+/ui/player-preview/design/primary-concept-v1.view.png
+/ui/player-preview/public/assets/valley.png

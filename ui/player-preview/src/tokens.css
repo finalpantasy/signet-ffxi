@@ -1,0 +1,11 @@
+:root {
+  --canvas: #e9efef;
+  --surface: #f5f9f8;
+  --text: #243436;
+  --secondary: #53676a;
+  --line: #cedcdd;
+  --accent: #007c91;
+  --focus: #006a7c;
+  --glass: rgba(249, 252, 251, 0.84);
+  color-scheme: light;
+}

@@ -1,0 +1,33 @@
+[package]
+name = "windower-rs"
+version = "0.1.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+publish = false
+description = "Signet for FFXI: experimental Rust launcher and runtime with Windower and Ashita compatibility adapters"
+
+[workspace]
+members = ["runtime"]
+exclude = ["providers/luajit"]
+resolver = "3"
+
+[dependencies]
+roxmltree = "=0.21.1"
+serde = { version = "=1.0.228", features = ["derive"] }
+serde_json = "=1.0.149"
+sha2 = "=0.10.9"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "=0.61.2", features = ["Win32_Foundation", "Win32_Security", "Win32_System_LibraryLoader", "Win32_System_Threading", "Win32_System_Memory", "Win32_System_Diagnostics_Debug", "Win32_System_Diagnostics_ToolHelp", "Win32_System_SystemInformation", "Win32_System_Registry", "Win32_Storage_FileSystem", "Win32_UI_WindowsAndMessaging", "Win32_UI_Controls", "Win32_UI_Input_KeyboardAndMouse", "Win32_Graphics_Gdi"] }
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+
+# Google Drive's virtual filesystem does not support Cargo's cache hard links.
+[profile.dev]
+incremental = false
+
+[profile.test]
+incremental = false

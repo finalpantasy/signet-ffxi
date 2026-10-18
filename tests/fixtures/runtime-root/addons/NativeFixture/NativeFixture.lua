@@ -1,0 +1,17 @@
+assert(ffxi.api_version == 1)
+assert(ffxi.runtime.ecosystem == 'native')
+ffxi.events.on('unload', function() ffxi.commands.queue('Native fixture unloaded') end)
+assert(not ffxi.capabilities.supports('game.state'))
+
+ffxi.events.on('load', function()
+    ffxi.chat.queue(207, 'Native addon loaded')
+end)
+ffxi.events.on('frame', function(e)
+    assert(e.index >= 1 and e.index <= 6)
+    ffxi.commands.queue('native frame ' .. e.index)
+end)
+ffxi.events.on('keyboard', function(dik, pressed, flags, blocked)
+    assert(dik == 30 and pressed and blocked)
+    ffxi.commands.queue('native keyboard observed previous block')
+    return false
+end)

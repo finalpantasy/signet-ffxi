@@ -1,0 +1,17 @@
+{
+  "xml": "<settings><profile name=\"Rust test\"><width>1920</width><height>1080</height><uiscale>1.5</uiscale><initcommand>echo Rust bootstrap</initcommand></profile></settings>",
+  "profile": "Rust test",
+  "context": {
+    "branch": "stable",
+    "launcher_version": "4.7.9.3",
+    "hook_version": "4.7.9.3",
+    "play_online_path": "E:/Test/POL",
+    "ffxi_path": "E:/Test/FFXI",
+    "windower_path": "K:/Test/Windower",
+    "region": "US",
+    "display_width": 2560,
+    "display_height": 1440,
+    "plugins": [],
+    "addons": []
+  }
+}

@@ -1,0 +1,78 @@
+[package]
+name = "windower-runtime"
+version = "0.1.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+publish = false
+
+[lib]
+name = "windower_runtime"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "native-lifecycle-probe"
+path = "src/bin/native_lifecycle_probe.rs"
+required-features = ["isolated-probe"]
+
+[[bin]]
+name = "addon-replay"
+path = "src/bin/addon_replay.rs"
+required-features = ["isolated-probe"]
+
+[[bin]]
+name = "profile-control-probe"
+path = "src/bin/profile_control_probe.rs"
+required-features = ["isolated-probe", "game-thread-probe"]
+
+[[bin]]
+name = "lab-file-reload-probe"
+path = "src/bin/lab_file_reload_probe.rs"
+required-features = ["isolated-probe", "game-thread-probe"]
+
+[[bin]]
+name = "profile-addon-host"
+path = "src/bin/profile_addon_host.rs"
+required-features = ["isolated-probe"]
+
+[[bin]]
+name = "runtime-probe"
+path = "src/bin/probe.rs"
+required-features = ["isolated-probe"]
+
+[[bin]]
+name = "plugin-probe"
+path = "src/bin/plugin_probe.rs"
+
+[[bin]]
+name = "vm-provider-probe"
+path = "src/bin/vm_provider_probe.rs"
+
+[[bin]]
+name = "graphics-probe"
+path = "src/bin/graphics_probe.rs"
+required-features = ["isolated-probe"]
+
+[[bin]]
+name = "addon-lifecycle-probe"
+path = "src/bin/addon_lifecycle_probe.rs"
+required-features = ["isolated-probe"]
+
+[[bin]]
+name="display-probe"
+path="src/bin/display_probe.rs"
+required-features=["client-windowing"]
+
+[features]
+isolated-probe = []
+client-diagnostics = []
+game-thread-probe = ["client-diagnostics"]
+client-windowing = []
+
+[dependencies]
+serde = { version = "=1.0.228", features = ["derive"] }
+windower-rs = { path = ".." }
+serde_json = "=1.0.149"
+sha2 = "=0.10.9"
+windows-sys = { version = "=0.61.2", features = ["Win32_Foundation", "Win32_System_Memory", "Win32_System_Threading", "Win32_System_LibraryLoader", "Win32_System_Diagnostics_Debug", "Win32_System_Kernel", "Win32_System_Registry", "Win32_Security", "Win32_UI_WindowsAndMessaging", "Win32_Graphics_Gdi"] }
+mlua = { version = "=0.11.4", features = ["lua51", "vendored", "send"] }
+retour = "=0.4.0-alpha.4"

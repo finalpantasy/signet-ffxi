@@ -1,0 +1,10 @@
+LIBRARY RustOfflinePluginFixture
+EXPORTS
+ FixtureProtocol=_FixtureProtocol@0
+ FixtureCount=_FixtureCount@4
+ GetInterfaceVersion=_GetInterfaceVersion@0
+ CreateInstance=_CreateInstance@0
+ FixtureWindowerCommand=_FixtureWindowerCommand@16
+ expGetInterfaceVersion=_expGetInterfaceVersion@0
+ expCreatePlugin=_expCreatePlugin@4
+ expDestroyPlugin=_expDestroyPlugin@4

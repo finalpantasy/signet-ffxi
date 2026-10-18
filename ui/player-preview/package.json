@@ -1,0 +1,24 @@
+{
+  "name": "signet-player-preview",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --strictPort",
+    "format": "prettier --write src index.html package.json design/DESIGN.md",
+    "format:check": "prettier --check src index.html package.json design/DESIGN.md",
+    "test:browser": "node tests/acceptance.mjs"
+  },
+  "dependencies": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "vite": "8.3.4",
+    "playwright-core": "1.61.1",
+    "prettier": "3.9.10",
+    "axe-core": "4.14.0"
+  }
+}
