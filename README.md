@@ -1,5 +1,10 @@
 # Signet for FFXI
 
+**Native builds and launch verification are paused pending security review.**
+CI currently checks source policy only; its native build/test job is intentionally
+disabled. See [the verification hold](docs/SECURITY_HOLD.md) before using the build
+commands below. Play remains unavailable, and no binary release is provided.
+
 An experimental Rust launcher and runtime for Final Fantasy XI, working toward
 Windower and Ashita compatibility in one application.
 

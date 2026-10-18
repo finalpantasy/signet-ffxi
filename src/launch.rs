@@ -2,7 +2,7 @@
 //! Verification children are bounded and terminated on failure. Interactive
 //! clients are detached only after successful injection/bootstrap/resume.
 use crate::protocol::{SETTINGS_BYTES, decode_settings};
-use crate::runtime_options::{OPTIONS_BYTES, RuntimeOptions};
+use crate::runtime_options::{NativeLibrary, OPTIONS_BYTES, RuntimeOptions};
 use std::{
     ffi::{OsStr, OsString},
     fs::File,
@@ -71,7 +71,7 @@ impl StartedClient {
 /// and leaves a successfully started interactive process running.
 pub fn launch_interactive_client(
     executable: &Path,
-    runtime: &Path,
+    runtime: &NativeLibrary,
     packet: &[u8],
     arguments: &[OsString],
     options: &RuntimeOptions,
@@ -84,12 +84,13 @@ pub fn launch_interactive_client(
 
 /// Create a fresh, initially suspended i686 process, load the specified i686
 /// runtime, wait for readiness, then resume and wait for that child to exit.
-/// No existing game or process is opened. The caller selects trusted binaries.
+/// No existing game or process is opened. A reviewed runtime path and SHA-256
+/// are mandatory; no selected-file hashing can create the expected pin.
 /// The shared kernel32 LoadLibrary address follows the same i686 Windows
 /// startup mechanism as the reference launcher; cross-bitness is rejected.
 pub fn run_isolated_child(
     executable: &Path,
-    runtime: &Path,
+    runtime: &NativeLibrary,
     packet: &[u8],
     arguments: &[OsString],
 ) -> Result<ChildResult, String> {
@@ -104,7 +105,7 @@ pub fn run_isolated_child(
 
 pub fn run_isolated_child_with_options(
     executable: &Path,
-    runtime: &Path,
+    runtime: &NativeLibrary,
     packet: &[u8],
     arguments: &[OsString],
     options: &RuntimeOptions,
@@ -127,19 +128,21 @@ pub fn run_isolated_child_with_options(
 }
 fn start_child(
     executable: &Path,
-    runtime: &Path,
+    runtime: &NativeLibrary,
     packet: &[u8],
     arguments: &[OsString],
     options: &RuntimeOptions,
     interactive: bool,
 ) -> Result<(OwnedChild, u32), String> {
+    // Keep the identity and its path stable until load/readiness/resume finish.
+    // On an error, the later-created owned-child guard drops first.
+    let verified_runtime = lock_pinned_runtime(runtime)?;
+    let runtime = &verified_runtime.path;
     decode_settings(packet)?;
     let option_bytes = options.encode()?;
     options.verify_external()?;
     let executable = executable.canonicalize().map_err(|e| e.to_string())?;
-    let runtime = runtime.canonicalize().map_err(|e| e.to_string())?;
     validate_i686(&executable, false)?;
-    validate_i686(&runtime, true)?;
     // canonicalize() produces \\?\ paths. Keep those for validation, but
     // legacy POL expects ordinary DOS/UNC names in its process parameters.
     let application = process_path(executable.as_os_str())?;
@@ -335,8 +338,114 @@ fn start_child(
     Ok((child, info.dwProcessId))
 }
 
+// This pin is an operator-reviewed expectation, not an approval or a hash
+// learned from the selected DLL. Access denial is a hard failure; no fallback.
+const MAX_RUNTIME_BYTES: u64 = 128 * 1024 * 1024;
+struct VerifiedRuntime {
+    path: std::path::PathBuf,
+    _directories: Vec<File>,
+    _file: File,
+}
+fn lock_pinned_runtime(pin: &NativeLibrary) -> Result<VerifiedRuntime, String> {
+    use sha2::{Digest, Sha256};
+    use std::{
+        fs::OpenOptions,
+        os::windows::fs::{MetadataExt, OpenOptionsExt},
+        path::{Component, Prefix},
+    };
+    use windows_sys::Win32::Storage::FileSystem::{
+        FILE_ATTRIBUTE_REPARSE_POINT, FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT,
+        FILE_SHARE_READ, FILE_SHARE_WRITE,
+    };
+
+    pin.validate()?;
+    let local_drive = matches!(pin.path.components().next(), Some(Component::Prefix(p))
+        if matches!(p.kind(), Prefix::Disk(_) | Prefix::VerbatimDisk(_)));
+    if !local_drive
+        || pin.path.to_string_lossy().contains('\0')
+        || pin.path.components().any(|part| match part {
+            Component::ParentDir | Component::CurDir => true,
+            Component::Normal(name) => name.to_string_lossy().contains(':'),
+            _ => false,
+        })
+    {
+        return Err("Runtime pin requires an absolute normalized local-drive path".into());
+    }
+
+    // Pin the path from its root down. Directory writes stay shareable, but
+    // ancestor rename/delete is refused while the child resolves LoadLibraryW.
+    // OPEN_REPARSE_POINT lets us reject a redirected final component itself.
+    let parent = pin.path.parent().ok_or("Pinned runtime has no parent")?;
+    let ancestors = parent.ancestors().collect::<Vec<_>>();
+    let mut directories = Vec::new();
+    for path in ancestors.into_iter().rev() {
+        let directory = OpenOptions::new()
+            .read(true)
+            .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE)
+            .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
+            .open(path)
+            .map_err(|_| "Runtime ancestor is unavailable or cannot be held stable")?;
+        let metadata = directory
+            .metadata()
+            .map_err(|_| "Cannot inspect runtime ancestor")?;
+        if !metadata.is_dir() || metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0 {
+            return Err("Redirected runtime ancestor refused".into());
+        }
+        directories.push(directory);
+    }
+    let mut file = OpenOptions::new()
+        .read(true)
+        .share_mode(FILE_SHARE_READ)
+        .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT)
+        .open(&pin.path)
+        .map_err(|_| "Pinned runtime is unavailable or locked; launch refused")?;
+    let metadata = file
+        .metadata()
+        .map_err(|_| "Cannot inspect pinned runtime")?;
+    if !metadata.is_file()
+        || metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0
+        || metadata.len() > MAX_RUNTIME_BYTES
+    {
+        return Err("Pinned runtime must be a plain file within the size limit".into());
+    }
+    let mut hash = Sha256::new();
+    let mut buffer = [0u8; 65536];
+    let mut total = 0u64;
+    loop {
+        let count = file
+            .read(&mut buffer)
+            .map_err(|_| "Cannot read pinned runtime")?;
+        if count == 0 {
+            break;
+        }
+        total += count as u64;
+        if total > MAX_RUNTIME_BYTES {
+            return Err("Pinned runtime exceeds size limit".into());
+        }
+        hash.update(&buffer[..count]);
+    }
+    if !format!("{:x}", hash.finalize()).eq_ignore_ascii_case(&pin.sha256) {
+        return Err("Runtime DLL differs from its reviewed SHA-256 pin; launch refused".into());
+    }
+    file.seek(SeekFrom::Start(0))
+        .map_err(|_| "Cannot inspect pinned runtime image")?;
+    validate_i686_file(&mut file, true)?;
+    let path = pin
+        .path
+        .canonicalize()
+        .map_err(|_| "Cannot resolve pinned runtime")?;
+    Ok(VerifiedRuntime {
+        path,
+        _directories: directories,
+        _file: file,
+    })
+}
+
 fn validate_i686(path: &Path, dll: bool) -> Result<(), String> {
     let mut file = File::open(path).map_err(|e| e.to_string())?;
+    validate_i686_file(&mut file, dll)
+}
+fn validate_i686_file(file: &mut File, dll: bool) -> Result<(), String> {
     let mut dos = [0u8; 64];
     file.read_exact(&mut dos).map_err(|e| e.to_string())?;
     if &dos[..2] != b"MZ" {
@@ -438,6 +547,95 @@ impl Drop for OwnedChild {
                 TerminateProcess(self.process.0, 0xe0000001);
                 WaitForSingleObject(self.process.0, 5000);
             }
+        }
+    }
+}
+
+#[cfg(test)]
+mod runtime_identity_tests {
+    use super::*;
+    use sha2::{Digest, Sha256};
+    use std::{
+        fs::{self, OpenOptions},
+        path::PathBuf,
+    };
+
+    // Source-defined PE header only: no executable code, DLL loading, child,
+    // game, retained binary, or security-product operation is involved.
+    fn fixture() -> (PathBuf, NativeLibrary) {
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let root =
+            std::env::temp_dir().join(format!("signet-pin-test-{}-{nonce}", std::process::id()));
+        fs::create_dir(&root).unwrap();
+        let mut bytes = vec![0u8; 152];
+        bytes[..2].copy_from_slice(b"MZ");
+        bytes[60..64].copy_from_slice(&128u32.to_le_bytes());
+        bytes[128..132].copy_from_slice(b"PE\0\0");
+        bytes[132..134].copy_from_slice(&0x14cu16.to_le_bytes());
+        bytes[150..152].copy_from_slice(&0x2000u16.to_le_bytes());
+        let path = root.join("header-fixture.bin");
+        fs::write(&path, &bytes).unwrap();
+        (
+            root,
+            NativeLibrary {
+                path,
+                sha256: format!("{:x}", Sha256::digest(&bytes)),
+            },
+        )
+    }
+    fn cleanup(root: PathBuf, pin: NativeLibrary) {
+        fs::remove_file(pin.path).unwrap();
+        fs::remove_dir(root).unwrap();
+    }
+    #[test]
+    fn runtime_pin_rejects_malformed_missing_and_mismatched_identity() {
+        let (root, pin) = fixture();
+        let mut bad = pin.clone();
+        bad.sha256.clear();
+        assert!(lock_pinned_runtime(&bad).is_err());
+        bad.sha256 = "0".repeat(64);
+        assert!(lock_pinned_runtime(&bad).is_err());
+        bad.path = root.join("not-present.bin");
+        assert!(lock_pinned_runtime(&bad).is_err());
+        drop(lock_pinned_runtime(&pin).unwrap());
+        cleanup(root, pin);
+    }
+    #[test]
+    fn runtime_pin_rejects_a_hash_matching_the_wrong_pe_machine() {
+        let (root, mut pin) = fixture();
+        let mut bytes = fs::read(&pin.path).unwrap();
+        bytes[132..134].copy_from_slice(&0x8664u16.to_le_bytes());
+        fs::write(&pin.path, &bytes).unwrap();
+        pin.sha256 = format!("{:x}", Sha256::digest(&bytes));
+        assert!(lock_pinned_runtime(&pin).is_err());
+        cleanup(root, pin);
+    }
+    #[test]
+    fn runtime_guard_refuses_file_write_and_file_or_parent_replacement() {
+        let (root, pin) = fixture();
+        let guard = lock_pinned_runtime(&pin).unwrap();
+        assert!(OpenOptions::new().write(true).open(&pin.path).is_err());
+        assert!(fs::rename(&pin.path, root.join("replacement.bin")).is_err());
+        assert!(fs::rename(&root, root.with_extension("moved")).is_err());
+        drop(guard);
+        drop(OpenOptions::new().write(true).open(&pin.path).unwrap());
+        cleanup(root, pin);
+    }
+    #[test]
+    fn runtime_pin_refuses_network_parent_traversal_and_alternate_stream_paths() {
+        for path in [
+            r"\\server\share\runtime.dll",
+            r"C:\fixture\..\runtime.dll",
+            r"C:\fixture\runtime.dll:stream",
+        ] {
+            let pin = NativeLibrary {
+                path: PathBuf::from(path),
+                sha256: "0".repeat(64),
+            };
+            assert!(lock_pinned_runtime(&pin).is_err());
         }
     }
 }

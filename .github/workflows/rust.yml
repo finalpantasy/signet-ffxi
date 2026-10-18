@@ -1,4 +1,4 @@
-name: Rust source checks
+name: Signet source checks (native builds paused)
 on:
   push:
   pull_request:
@@ -6,7 +6,19 @@ on:
 permissions:
   contents: read
 jobs:
+  source-only:
+    runs-on: windows-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Source-only launch policy checks
+        run: python scripts/check-source-safety.py --self-test
   windows-x86:
+    # SECURITY_HOLD: source review does not clear a blocked native artifact.
+    # Re-enable only after a separately reviewed security/build decision.
+    if: ${{ false }}
     runs-on: windows-latest
     timeout-minutes: 10
     env:

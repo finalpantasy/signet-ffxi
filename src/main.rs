@@ -211,144 +211,11 @@ fn run() -> Result<(), String> {
             #[cfg(not(all(windows, target_pointer_width = "32")))]
             return Err("Build scan-client for i686-pc-windows-msvc".into());
         }
-        Some("launch-local") if args.len() == 6 => {
-            #[cfg(all(windows, target_pointer_width = "32"))]
-            {
-                let packet = fs::read(&args[2]).map_err(|e| e.to_string())?;
-                let settings = windower_rs::protocol::decode_settings(&packet)?;
-                let options: windower_rs::runtime_options::RuntimeOptions =
-                    serde_json::from_slice(&fs::read(&args[3]).map_err(|e| e.to_string())?)
-                        .map_err(|e| e.to_string())?;
-                options.validate()?;
-                if !options.virtual_display
-                    || settings.fullscreen
-                    || !settings.init_addons.is_empty()
-                    || !settings.init_plugins.is_empty()
-                    || !options.addons.is_empty()
-                    || options.luajit_provider.is_some()
-                {
-                    return Err("Local trial requires virtual windowed display and empty addon/plugin selections".into());
-                }
-                let diagnostic = options
-                    .client_diagnostic
-                    .as_ref()
-                    .ok_or("Local trial requires a first-frame diagnostic")?;
-                if Path::new(&args[5]).exists()
-                    || diagnostic.exists()
-                    || options
-                        .game_thread_probe
-                        .as_ref()
-                        .is_some_and(|p| p.ready_report.exists() || p.result_report.exists())
-                {
-                    return Err("Local trial report already exists".into());
-                }
-                let local = windower_rs::local_client::read(Path::new(&args[4]))?;
-                local.verify()?;
-                let discovered = windower_rs::discovery::discover()?;
-                let region = match settings.region {
-                    0 => windower_rs::profile::Region::JP,
-                    1 => windower_rs::profile::Region::US,
-                    2 => windower_rs::profile::Region::EU,
-                    _ => return Err("Invalid local client region".into()),
-                };
-                let installed = windower_rs::discovery::select_region(&discovered.clients, region)?;
-                if Path::new(&settings.ffxi_path)
-                    .canonicalize()
-                    .map_err(|e| e.to_string())?
-                    != installed
-                        .ffxi_path
-                        .as_ref()
-                        .ok_or("Missing installed FFXI path")?
-                        .canonicalize()
-                        .map_err(|e| e.to_string())?
-                {
-                    return Err("Local trial game path differs from installed client".into());
-                }
-                windower_rs::display::DisplayValues::from_settings(&settings)?;
-                let child = windower_rs::launch::launch_interactive_client(
-                    &local.loader.path,
-                    Path::new(&args[1]),
-                    &packet,
-                    &local.arguments(),
-                    &options,
-                )?;
-                write_new(&args[5],&serde_json::to_vec_pretty(&serde_json::json!({"stage":"local_loopback_client_launch","child_pid":child.process_id,"loopback_only":true,"virtual_display":true,"game_integration_complete":false,"runtime":args[1]})).map_err(|e|e.to_string())?)?;
-                println!(
-                    "Started separate Rust local client: PID {}",
-                    child.process_id
-                );
-            }
-            #[cfg(not(all(windows, target_pointer_width = "32")))]
-            return Err("Build launch-local for i686-pc-windows-msvc".into());
+        Some("launch-local") => {
+            return Err("launch-local is disabled: a verified owner, lifetime private USER routing, and pre-start mute contract are required. Security review remains unresolved.".into());
         }
-        Some("launch-client") if args.len() == 5 => {
-            #[cfg(all(windows, target_pointer_width = "32"))]
-            {
-                if Path::new(&args[4]).exists() {
-                    return Err("Refusing to replace an existing client launch report".into());
-                }
-                let packet = fs::read(&args[2]).map_err(|error| error.to_string())?;
-                let settings = windower_rs::protocol::decode_settings(&packet)?;
-                if !settings.init_plugins.is_empty() || !settings.init_addons.is_empty() {
-                    return Err(
-                        "First client diagnostic requires empty addon/plugin startup lists".into(),
-                    );
-                }
-                let options: windower_rs::runtime_options::RuntimeOptions =
-                    serde_json::from_slice(&fs::read(&args[3]).map_err(|error| error.to_string())?)
-                        .map_err(|error| error.to_string())?;
-                options.validate()?;
-                let diagnostic = options
-                    .client_diagnostic
-                    .as_ref()
-                    .ok_or("First client launch requires an explicit diagnostic report")?;
-                if diagnostic.exists() {
-                    return Err("Client diagnostic report already exists".into());
-                }
-                if let Some(probe) = &options.game_thread_probe
-                    && (probe.ready_report.exists() || probe.result_report.exists())
-                {
-                    return Err("Game thread probe report already exists".into());
-                }
-                let discovered = windower_rs::discovery::discover()?;
-                let region = match settings.region {
-                    0 => windower_rs::profile::Region::JP,
-                    1 => windower_rs::profile::Region::US,
-                    2 => windower_rs::profile::Region::EU,
-                    _ => return Err("Invalid client region".into()),
-                };
-                let installation =
-                    windower_rs::discovery::select_region(&discovered.clients, region)?;
-                let directory = installation
-                    .play_online_path
-                    .as_ref()
-                    .ok_or("Missing installed PlayOnline path")?
-                    .canonicalize()
-                    .map_err(|error| error.to_string())?;
-                if Path::new(&settings.play_online_path)
-                    .canonicalize()
-                    .map_err(|error| error.to_string())?
-                    != directory
-                {
-                    return Err("Packet PlayOnline path differs from installed client".into());
-                }
-                let child = windower_rs::launch::launch_interactive_client(
-                    &directory.join("pol.exe"),
-                    Path::new(&args[1]),
-                    &packet,
-                    &["/game".into(), "eAZcFcB".into()],
-                    &options,
-                )?;
-                let report = serde_json::to_vec_pretty(&serde_json::json!({"stage":"new_client_diagnostic_launch","child_pid":child.process_id,
-                    "runtime":args[1],"client_diagnostic":diagnostic,"game_integration_complete":false})).map_err(|error| error.to_string())?;
-                write_new(&args[4], &report)?;
-                println!(
-                    "Started separate PlayOnline client: PID {}",
-                    child.process_id
-                );
-            }
-            #[cfg(not(all(windows, target_pointer_width = "32")))]
-            return Err("Build launch-client for i686-pc-windows-msvc".into());
+        Some("launch-client") => {
+            return Err("launch-client is disabled: a verified owner, lifetime private USER routing, and pre-start mute contract are required. Security review remains unresolved.".into());
         }
         Some("launch-probe" | "launch-probe-interactive") if args.len() == 5 || args.len() == 6 => {
             #[cfg(all(windows, target_pointer_width = "32"))]
@@ -365,9 +232,7 @@ fn run() -> Result<(), String> {
                 if report.exists() {
                     return Err("Refusing to replace an existing test report".into());
                 }
-                let runtime = Path::new(&args[1])
-                    .canonicalize()
-                    .map_err(|e| e.to_string())?;
+                let runtime = read_runtime_pin(Path::new(&args[1]))?;
                 let packet = fs::read(&args[2]).map_err(|e| e.to_string())?;
                 let options = if args.len() == 6 {
                     let options: windower_rs::runtime_options::RuntimeOptions =
@@ -381,7 +246,7 @@ fn run() -> Result<(), String> {
                 };
                 let arguments = [
                     "--injected".into(),
-                    runtime.as_os_str().into(),
+                    runtime.path.as_os_str().into(),
                     report.as_os_str().into(),
                 ];
                 let child = if args[0] == "launch-probe-interactive" {
@@ -419,7 +284,7 @@ fn run() -> Result<(), String> {
                         .map_err(|e| e.to_string())?;
                 println!(
                     "{}",
-                    serde_json::json!({"stage":"suspended_child_runtime_launch","child_pid":child.process_id,"child_exit_code":child.exit_code,"graphics":graphics,"runtime_options":options,"interactive_startup":args[0] == "launch-probe-interactive","game_integration_complete":false})
+                    serde_json::json!({"stage":"suspended_child_runtime_launch","child_pid":child.process_id,"child_exit_code":child.exit_code,"graphics":graphics,"runtime_sha256":runtime.sha256,"runtime_options":options,"interactive_startup":args[0] == "launch-probe-interactive","game_integration_complete":false})
                 );
             }
             #[cfg(not(all(windows, target_pointer_width = "32")))]
@@ -496,7 +361,7 @@ fn run() -> Result<(), String> {
             println!("{} bytes, sha256 {:x}", bytes.len(), Sha256::digest(&bytes));
         }
         Some("--help") | None => println!(
-            "windower-rs (partial port; FFXI integration incomplete)\n  clients\n  inspect <Windower directory>\n  profiles <settings.xml>\n  packet <fixture.json> <new packet.bin> <new profile.json>\n  launch-probe <Rust DLL> <settings packet> <graphics-probe.exe> <new report.json>\n  scan-client <i686 PID with FFXiMain.dll loaded> <new code report.json>\n  capture-client <i686 PID> <new executable-code directory>\n  analyze-code <executable-code directory> <new report.json>"
+            "windower-rs (partial port; FFXI integration incomplete)\n  clients\n  inspect <Windower directory>\n  profiles <settings.xml>\n  packet <fixture.json> <new packet.bin> <new profile.json>\n  launch-probe <reviewed runtime-pin.json> <settings packet> <graphics-probe.exe> <new report.json>\n  scan-client <i686 PID with FFXiMain.dll loaded> <new code report.json>\n  capture-client <i686 PID> <new executable-code directory>\n  analyze-code <executable-code directory> <new report.json>"
         ),
         _ => return Err("Unknown command; use --help".into()),
     }
@@ -539,4 +404,20 @@ fn names(c: &serde_json::Value, name: &str) -> Result<Vec<String>, String> {
                 .ok_or_else(|| format!("Invalid {name} entry"))
         })
         .collect()
+}
+
+// This is an explicit reviewed expectation. Never create a pin by hashing a
+// caller-selected DLL here, and never fall back to an older/renamed artifact.
+#[cfg(all(windows, target_pointer_width = "32"))]
+fn read_runtime_pin(path: &Path) -> Result<windower_rs::runtime_options::NativeLibrary, String> {
+    if !path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("json"))
+    {
+        return Err("Launch requires a reviewed runtime-pin JSON, not a DLL path".into());
+    }
+    let pin: windower_rs::runtime_options::NativeLibrary = read_bounded_json(path, 65536)?;
+    pin.validate()?;
+    Ok(pin)
 }
