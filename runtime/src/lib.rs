@@ -1,6 +1,8 @@
 //! Native Rust runtime bootstrap. Game hooks and plugin hosting are still pending.
 //! This DLL never loads the original Hook.dll or LuaCore.dll.
 
+#[cfg(all(windows, target_pointer_width = "32"))]
+mod controller_discovery;
 #[cfg(windows)]
 mod native;
 

@@ -42,6 +42,10 @@ and an explicit local-only build/path gate. No Ashita DLL is used as its backend
 Cargo.lock identifies the pinned dependencies and their registry checksums.
 Those crates retain their respective upstream licenses.
 
+The controller discovery cache uses `arc-swap` 1.9.3 (MIT OR Apache-2.0)
+for concurrent immutable snapshot publication. Its source and license files
+are provided by the pinned crates.io package identified in Cargo.lock.
+
 The D3D8 forwarding declarations are generated from public COM interface
 signatures in the frozen Wine `d3d8.h` reference (SHA-256
 `e03c863023535cdb80a7adf97f274da6d74c23ec78e20a3cc2447451c572f89b`).

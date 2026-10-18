@@ -139,6 +139,15 @@ pub extern "system" fn windower_rs_runtime_status() -> u32 {
     runtime_status()
 }
 
+/// Controller discovery diagnostics: installed, queries, scans, scan errors,
+/// maximum cache lookup microseconds, maximum worker scan microseconds,
+/// requested query slots, startup preparation milliseconds.
+#[cfg(target_pointer_width = "32")]
+#[unsafe(no_mangle)]
+pub extern "system" fn windower_rs_controller_discovery_counter(which: u32) -> u32 {
+    crate::controller_discovery::counter(which)
+}
+
 #[unsafe(no_mangle)]
 pub extern "system" fn windower_rs_protocol_version() -> u32 {
     0x0407_0903
@@ -244,6 +253,15 @@ fn initialize() -> Result<(), String> {
     OPTIONS
         .set(options)
         .map_err(|_| "Runtime options already initialized")?;
+    #[cfg(target_pointer_width = "32")]
+    if OPTIONS
+        .get()
+        .is_some_and(|options| options.controller_discovery)
+    {
+        unsafe {
+            crate::controller_discovery::install()?;
+        }
+    }
     if OPTIONS.get().is_some_and(|options| options.virtual_display) {
         #[cfg(all(target_pointer_width = "32", feature = "client-windowing"))]
         unsafe {

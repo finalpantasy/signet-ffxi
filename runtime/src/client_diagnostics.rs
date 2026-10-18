@@ -69,7 +69,7 @@ pub fn on_present() {
             "original_hook_loaded":loaded("Hook.dll"),"original_lua_core_loaded":loaded("LuaCore.dll"),
             "original_ashita_core_loaded":loaded("Ashita.dll"),"graphics":{"factory_calls":crate::graphics::counter(0),
             "devices_created":crate::graphics::counter(1),"frames_presented":crate::graphics::counter(2)},
-            "virtual_display_overrides":display_overrides,"game_functions_called":false,"addons_loaded":0,"game_integration_complete":false});
+            "virtual_display_overrides":display_overrides,"controller_discovery":crate::controller_discovery::observe(),"game_functions_called":false,"addons_loaded":0,"game_integration_complete":false});
         let Ok(bytes) = serde_json::to_vec_pretty(&report) else { return false; };
         let saved = std::fs::OpenOptions::new().write(true).create_new(true).open(path).and_then(|mut file| file.write_all(&bytes)).is_ok();
         finish(saved);

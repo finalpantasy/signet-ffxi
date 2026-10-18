@@ -38,6 +38,10 @@ pub struct RuntimeOptions {
     pub game_thread_probe: Option<GameThreadProbe>,
     #[serde(default)]
     pub virtual_display: bool,
+    /// Cache DirectInput controller discovery off the caller thread. Set false
+    /// only to compare the original enumeration path during diagnostics.
+    #[serde(default = "controller_discovery_default")]
+    pub controller_discovery: bool,
 }
 /// Deliberately fixed local echo trial; never an arbitrary command interface.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -171,8 +175,12 @@ impl Default for RuntimeOptions {
             client_diagnostic: None,
             game_thread_probe: None,
             virtual_display: false,
+            controller_discovery: true,
         }
     }
+}
+fn controller_discovery_default() -> bool {
+    true
 }
 impl RuntimeOptions {
     pub fn validate(&self) -> Result<(), String> {
@@ -353,6 +361,23 @@ impl RuntimeOptions {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn controller_discovery_is_default_on_for_old_options_and_can_be_disabled() {
+        let mut options = super::RuntimeOptions::default();
+        assert!(options.controller_discovery);
+        let mut old = serde_json::to_value(&options).unwrap();
+        old.as_object_mut().unwrap().remove("controller_discovery");
+        assert!(
+            serde_json::from_value::<super::RuntimeOptions>(old)
+                .unwrap()
+                .controller_discovery
+        );
+        options.controller_discovery = false;
+        assert_eq!(
+            super::RuntimeOptions::decode(&options.encode().unwrap()).unwrap(),
+            options
+        );
+    }
     #[test]
     fn file_lab_pins_are_fixed_private_and_round_trip_without_enabling_general_addons() {
         use super::*;
