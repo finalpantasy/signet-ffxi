@@ -1,5 +1,7 @@
 # Signet for FFXI
 
+[![Support me on Ko-fi](https://img.shields.io/badge/Ko--fi-buy%20me%20a%20coffee-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/finalpantasy)
+
 **Native builds and launch verification are paused pending security review.**
 CI currently checks source policy only; its native build/test job is intentionally
 disabled. See [the verification hold](docs/SECURITY_HOLD.md) before using the build
@@ -94,3 +96,7 @@ third-party mod packages, server credentials or private databases are bundled.
 
 An independent community project, not affiliated with or endorsed by Square Enix,
 Windower or Ashita. FINAL FANTASY XI and other marks belong to their respective owners.
+
+## Support
+
+Free hobby project. If it helps you, you can [buy me a coffee on Ko-fi](https://ko-fi.com/finalpantasy). Thank you!
