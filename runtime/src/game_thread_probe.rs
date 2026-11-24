@@ -367,7 +367,7 @@ fn install(config: &GameThreadProbe, scan: &ScanReport) -> Result<usize, String>
         let image = std::path::PathBuf::from(std::ffi::OsString::from_wide(&image_name[..len]));
         if image.file_name().and_then(|p| p.to_str()) != Some("xiloader.exe")
             || lab.request.parent() != image.parent()
-            || !image.starts_with("F:/FFXI-Modding/RustLocalLab")
+            || !image.starts_with("A:/dev/signet-lab/RustLocalLab")
         {
             return Err(
                 "Automatic navigation is restricted to a private xiloader lab trial".into(),

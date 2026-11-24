@@ -5,6 +5,35 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# During the hold, admit only this reviewed active workflow prefix. Comparing
+# the complete block also covers job defaults, shells, environment and actions;
+# checking just run: lines would miss other ways to execute code in CI.
+SOURCE_WORKFLOW_PREFIX = """name: Signet source checks (native builds paused)
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-only:
+    runs-on: windows-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Source-only launch policy checks
+        run: python scripts/check-source-safety.py --self-test"""
+
+
+def workflow_lines(source):
+    return [
+        line.rstrip()
+        for line in source.splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+
 
 def branch(source, name):
     start = source.find('        Some("' + name + '")')
@@ -42,13 +71,22 @@ def check(main, launch, player, workflow):
         errors.append("startup identity guards must not permit deletion")
     if '"game_launch":{"available":false' not in player:
         errors.append("Play must remain unavailable during the security hold")
-    native = workflow[workflow.find("  windows-x86:"):]
-    if not re.search(r"(?m)^    if: \$\{\{ false \}\}$", native):
+    lines = workflow_lines(workflow)
+    headings = [line for line in lines if re.match(r"^  \S", line)]
+    # The active prefix below also pins which top-level YAML keys are allowed.
+    # Reject additional or quoted job headings rather than guessing their keys.
+    if headings != ["  push:", "  pull_request:", "  workflow_dispatch:",
+                    "  contents: read", "  source-only:", "  windows-x86:"]:
+        errors.append("CI jobs and top-level settings must match the security hold allowlist")
+    native_index = lines.index("  windows-x86:") if "  windows-x86:" in lines else len(lines)
+    if lines[:native_index] != workflow_lines(SOURCE_WORKFLOW_PREFIX):
+        errors.append("active CI settings, actions and steps must match the reviewed source-only block")
+    native = lines[native_index:]
+    conditions = [line for line in native if line.startswith("    if:")]
+    if conditions != ["    if: ${{ false }}"]:
         errors.append("native CI builds must remain paused")
-    source_job = workflow[workflow.find("  source-only:"):workflow.find("  windows-x86:")]
-    commands = re.findall(r"(?m)^\s+run: (.+)$", source_job)
-    if commands != ["python scripts/check-source-safety.py --self-test"]:
-        errors.append("source-only CI must run only this static checker")
+    if any(re.match(r"^\S", line) for line in native):
+        errors.append("workflow-wide settings after the native job are not admitted during the hold")
     return errors
 
 
@@ -69,6 +107,16 @@ def main():
             (1, ".eq_ignore_ascii_case(&pin.sha256)", ".eq_ignore_ascii_case(&other_digest)"),
             (2, '"game_launch":{"available":false', '"game_launch":{"available":true'),
             (3, "if: ${{ false }}", "if: ${{ true }}"),
+            (3, "  windows-x86:", "  extra-build:\n    runs-on: windows-latest\n    steps:\n      - run: cargo build\n  windows-x86:"),
+            (3, "  windows-x86:", "  renamed-native:"),
+            (3, "    if: ${{ false }}", "    if: ${{ false }}\n    if: ${{ true }}"),
+            (3, "      - name: Source-only launch policy checks", "      - uses: unreviewed/action@main\n      - name: Source-only launch policy checks"),
+            (3, "        run: python scripts/check-source-safety.py --self-test", "        shell: unreviewed-shell {0}\n        run: python scripts/check-source-safety.py --self-test"),
+            (3, "fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09", "main"),
+            (3, "permissions:\n  contents: read", "permissions:\n  contents: write"),
+            (3, "jobs:", "env:\n  PYTHONPATH: unreviewed-code\njobs:"),
+            (3, "          exit $LASTEXITCODE", "          exit $LASTEXITCODE\n  extra-build:\n    runs-on: windows-latest\n    steps:\n      - run: cargo build"),
+            (3, "          exit $LASTEXITCODE", "          exit $LASTEXITCODE\nenv:\n  PYTHONPATH: unreviewed-code"),
         ]
         for index, before, after in mutations:
             changed = texts.copy()
@@ -77,7 +125,7 @@ def main():
             changed[index] = changed[index].replace(before, after)
             if not check(*changed):
                 raise SystemExit("Static checker failed to reject a source regression")
-        print("PASS: seven source-contract mutation checks.")
+        print(f"PASS: {len(mutations)} source-contract mutation checks.")
     print("PASS: source-only checks. Native builds, unit tests and launches were not run.")
 
 

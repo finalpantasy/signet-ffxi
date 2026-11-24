@@ -4,7 +4,7 @@ local bridge = { cmdprops = { permission = 5, parameters = 'ss' } }
 local sessions = {}
 local count = 0
 local sequences = {}
-local directory = 'F:/FFXI-Modding/LocalServer/private/rust-bridge-receipts/'
+local directory = 'A:/dev/signet-lab/LocalServer/private/rust-bridge-receipts/'
 local expected = { wload=true, wdelay=true, aload=true, adelay=true, nload=true, ndelay=true }
 local reload_expected = { reload_old1=true, reload_neighbor1=true, reload_old2=true,
     reload_new101=true, reload_neighbor2=true, reload_new102=true }
