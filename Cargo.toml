@@ -7,7 +7,7 @@ publish = false
 description = "Signet for FFXI: experimental Rust launcher and runtime with Windower and Ashita compatibility adapters"
 
 [workspace]
-members = ["runtime"]
+members = ["runtime", "crates/signet-dat", "crates/signet-render", "crates/signet-launcher", "crates/signet-parity", "crates/signet-patch"]
 exclude = ["providers/luajit"]
 resolver = "3"
 

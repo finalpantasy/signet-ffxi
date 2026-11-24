@@ -1,0 +1,22 @@
+[package]
+name = "signet-parity"
+version = "0.1.0"
+edition = "2024"
+publish = false
+license = "GPL-3.0-or-later"
+description = "Signet for FFXI: read-only retail client probe, shared parity CSV format and the retail-versus-Signet comparator"
+
+[lib]
+name = "signet_parity"
+path = "src/lib.rs"
+
+[[bin]]
+name = "signet-retail-probe"
+path = "src/bin/signet-retail-probe.rs"
+
+[[bin]]
+name = "signet-parity-compare"
+path = "src/bin/signet-parity-compare.rs"
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "=0.62.2", features = ["Win32_Foundation", "Win32_Security", "Win32_Graphics_Gdi", "Win32_System_Threading", "Win32_System_Diagnostics_Debug", "Win32_System_Diagnostics_ToolHelp", "Win32_System_Performance", "Win32_System_LibraryLoader", "Win32_UI_WindowsAndMessaging", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_Media", "Win32_System_Console"] }

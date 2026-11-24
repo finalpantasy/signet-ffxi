@@ -1,0 +1,9 @@
+[package]
+name = "signet-dat"
+version = "0.1.0"
+edition = "2024"
+publish = false
+license = "GPL-3.0-or-later"
+description = "Signet for FFXI: read-only access to a local FFXI install's DAT files"
+
+[dependencies]

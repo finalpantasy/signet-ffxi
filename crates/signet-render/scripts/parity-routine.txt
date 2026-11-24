@@ -1,0 +1,46 @@
+# Signet side of the retail measurement routine (docs/RETAIL_MEASUREMENT_ROUTINE.md), in script form.
+# Keys: w a s d move, < > ^ v are the camera arrows. `-` is no key. 60 ticks = 1 s.
+# Run: signet-render --play --script scripts/parity-routine.txt --parity-log signet.csv --actor -92,auto,77,90
+hold - 180          # 1. stand still 3 s
+hold w 300          # 2. hold W 5 s
+hold - 180          #    release, wait 3 s
+hold < 180          # 3. camera left 3 s
+hold > 180          #    camera right 3 s
+hold ^ 120          # 4. pitch up (to the limit), then down (to the limit)
+hold v 180
+hold - 60
+mouse 6 0 90        # 5. mouse orbit (Signet orbits with no button held)
+mouse 0 -4 60
+hold - 60
+# 6. zoom in, one notch per second
+wheel 1
+hold - 59
+wheel 1
+hold - 59
+wheel 1
+hold - 59
+wheel 1
+hold - 59
+wheel 1
+hold - 59
+wheel 1
+hold - 59
+#    zoom out, one notch per second
+wheel -1
+hold - 59
+wheel -1
+hold - 59
+wheel -1
+hold - 59
+wheel -1
+hold - 59
+wheel -1
+hold - 59
+wheel -1
+hold - 59
+hold - 60
+hold w 120         # 7. walk a square: W, turn right, W, turn right
+hold d 60
+hold w 120
+hold d 60
+hold - 120

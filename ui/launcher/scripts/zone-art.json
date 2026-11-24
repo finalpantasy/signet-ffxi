@@ -1,0 +1,12 @@
+[
+  { "id": 100, "name": "West Ronfaure", "slug": "west-ronfaure", "dat": "ROM/0/120.DAT", "camera": "-366.7,-37.6,-550.7,315,-6", "spawn": [-366.7, -550.7, 315] },
+  { "id": 116, "name": "East Sarutabaruta", "slug": "east-sarutabaruta", "dat": "ROM/1/0.DAT", "camera": "307.3,-25.6,-15.3,180,-6", "spawn": [307.3, -15.3, 180], "hero": true },
+  { "id": 102, "name": "La Theine Plateau", "slug": "la-theine-plateau", "dat": "ROM/0/115.DAT", "camera": "-45.0,-22.7,-585.0,315,-6", "spawn": [-45.0, -585.0, 315] },
+  { "id": 108, "name": "Konschtat Highlands", "slug": "konschtat-highlands", "dat": "ROM/0/90.DAT", "camera": "316.7,-68.5,-283.3,135,-6", "spawn": [316.7, -283.3, 135] },
+  { "id": 103, "name": "Valkurm Dunes", "slug": "valkurm-dunes", "dat": "ROM/0/102.DAT", "camera": "-52.0,-17.1,-225.3,292,-6", "spawn": [-52.0, -225.3, 292] },
+  { "id": 230, "name": "Southern San d'Oria", "slug": "southern-san-doria", "dat": "ROM/1/31.DAT", "camera": "-66.7,-16.6,-40.0,68,-3" },
+  { "id": 235, "name": "Bastok Markets", "slug": "bastok-markets", "dat": "ROM/1/35.DAT", "camera": "-280.0,-22.8,-136.0,90,-2" },
+  { "id": 238, "name": "Windurst Waters", "slug": "windurst-waters", "dat": "ROM/0/78.DAT", "camera": "73.3,-20.0,86.7,215,0" },
+  { "id": 196, "name": "Gusgen Mines", "slug": "gusgen-mines", "dat": "ROM/1/16.DAT", "camera": "-99.5,-30.2,386.7,0,0" },
+  { "id": 196, "name": "Gusgen Mines (cart tunnel)", "slug": "gusgen-mines-cart", "dat": "ROM/1/16.DAT", "camera": "-99.5,-30.2,386.7,90,0", "alt": true }
+]
