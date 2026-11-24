@@ -1,0 +1,88 @@
+/* Signet launcher tokens. Neutral glass (white, graphite, silver) with one gold accent.
+   Reuses the player-preview neutral scale; the teal of the older DESIGN.md is not used. */
+:root {
+  --font: "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Segoe UI Variable Display", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  --mono: "Cascadia Mono", "Cascadia Code", Consolas, monospace;
+
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --r-panel: 16px;
+  --r-control: 8px;
+  --r-pill: 999px;
+
+  /* light */
+  --sim-backdrop:
+    radial-gradient(1200px 700px at 12% -10%, #f4f2ee 0%, transparent 60%),
+    radial-gradient(900px 600px at 100% 110%, #d9d9de 0%, transparent 65%),
+    #e7e6e3;
+  --text: #1c1c20;
+  --text-2: #50505a;
+  --text-3: #6e6e78;
+  --glass: rgba(255, 255, 255, 0.56);
+  --glass-strong: rgba(255, 255, 255, 0.8);
+  --glass-hover: rgba(255, 255, 255, 0.72);
+  --glass-press: rgba(255, 255, 255, 0.5);
+  --line: rgba(24, 24, 32, 0.1);
+  --line-strong: rgba(24, 24, 32, 0.16);
+  --highlight: rgba(255, 255, 255, 0.85);
+  --shadow: 0 1px 2px rgba(20, 20, 30, 0.06), 0 8px 24px rgba(20, 20, 30, 0.06);
+  --field: rgba(255, 255, 255, 0.7);
+  --field-line: rgba(24, 24, 32, 0.18);
+  --row-hover: rgba(24, 24, 32, 0.045);
+  --row-active: rgba(24, 24, 32, 0.075);
+  --silver: #9a9aa3;
+
+  --gold: #c7a052;
+  --gold-hi: #dcbd78;
+  --gold-lo: #b98f40;
+  --gold-ink: #7a5c1f;
+  --gold-soft: rgba(199, 160, 82, 0.16);
+  --gold-line: rgba(160, 120, 40, 0.42);
+  --on-gold: #231a08;
+  --focus: #8c6a26;
+  --danger: #a3302a;
+  --danger-soft: rgba(163, 48, 42, 0.1);
+
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --sim-backdrop:
+    radial-gradient(1200px 700px at 10% -10%, #2c2c31 0%, transparent 60%),
+    radial-gradient(900px 600px at 100% 110%, #1a1a1d 0%, transparent 65%),
+    #202023;
+  --text: #f2f2f4;
+  --text-2: #babac3;
+  --text-3: #93939d;
+  --glass: rgba(44, 44, 49, 0.5);
+  --glass-strong: rgba(58, 58, 64, 0.72);
+  --glass-hover: rgba(66, 66, 72, 0.6);
+  --glass-press: rgba(44, 44, 49, 0.6);
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.14);
+  --highlight: rgba(255, 255, 255, 0.06);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.22);
+  --field: rgba(24, 24, 27, 0.5);
+  --field-line: rgba(255, 255, 255, 0.14);
+  --row-hover: rgba(255, 255, 255, 0.05);
+  --row-active: rgba(255, 255, 255, 0.085);
+  --silver: #8a8a94;
+
+  --gold: #d2ae64;
+  --gold-hi: #e3c684;
+  --gold-lo: #c09a4f;
+  --gold-ink: #e2c27e;
+  --gold-soft: rgba(210, 174, 100, 0.14);
+  --gold-line: rgba(226, 194, 126, 0.4);
+  --on-gold: #1f1707;
+  --focus: #e2c27e;
+  --danger: #ff9a92;
+  --danger-soft: rgba(255, 120, 110, 0.12);
+
+  color-scheme: dark;
+}

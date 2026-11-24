@@ -48,6 +48,43 @@ synthetic Rust fixtures, not private server databases, accounts, game assets,
 third-party library snapshots or raw machine-specific reports. Public CI does
 not reproduce the private-server campaign.
 
+## Replacement client pieces
+
+A second set of crates works toward a client that does not depend on the retail
+executable. They are 64-bit Windows code, separate from the x86 runtime above, and
+read your own FFXI install read-only. None of them ships game data. Design notes and
+measured results are in [the replacement client notes](docs/REPLACEMENT_CLIENT.md).
+
+- **Launcher** (`crates/signet-launcher`, UI in `ui/launcher`): a native window that opens
+  PlayOnline and shows the installed client version and update state. It can start the
+  Signet zone viewer. Build the UI first (`npm ci && npm run build` in `ui/launcher`); the
+  executable embeds `ui/launcher/dist`, which is not committed.
+- **DAT reader and renderer** (`crates/signet-dat`, `crates/signet-render`): reads the ROM
+  folders and decodes zone meshes, textures, collision, skeletons and animations, then draws
+  them with Direct3D 12 (a Vulkan screenshot backend is parked). Zone, actor and environment
+  keys are read from your files at run time.
+- **Retail patcher** (`crates/signet-patch`): checks an install against Square Enix's patch
+  server and can download and apply the update without PlayOnline Viewer. `plan` writes
+  nothing to the install; `apply` backs up each file first and needs `--yes`.
+- **Retail parity probe** (`crates/signet-parity`): a read-only probe that records camera and
+  movement values from a running retail client, plus a comparator against Signet's own
+  output. See [the measurement routine](docs/RETAIL_MEASUREMENT_ROUTINE.md).
+
+![Launcher, retail client page](docs/images/launcher-retail-dark.png)
+
+![Launcher, home page with an update available](docs/images/launcher-home-light.png)
+
+*Real captures of the launcher. The background is Signet's own render of a local install.*
+
+Run each crate's tests on its own, for example `cargo test -p signet-dat`; tests that need
+an install or an unpacked client image skip when it is absent (set `SIGNET_FFXI_ROOT` to
+your install to run them). These crates have not been through the security review that holds
+the runtime, and CI does not build them.
+
+Using a third-party client or patcher with the retail servers may break Square Enix's
+terms of service and can get an account banned. The launcher and patcher are for your own
+install; use them at your own risk.
+
 ## Planned player experience
 
 Profiles, a unified addon/plugin/mod library, readable configuration forms,

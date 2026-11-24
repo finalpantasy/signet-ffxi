@@ -31,8 +31,10 @@ acceptance remain unverified. The four included regression tests use synthetic
 header bytes and never load a DLL or create a child; they have not been run for
 this public patch. Earlier build/test results apply only to their exact commits.
 
-CI currently runs a static source-contract checker, including seven deliberate
-source mutations. This can catch certain accidental policy regressions. It is
+CI currently runs a static source-contract checker, including 17 deliberate
+source mutations. Its active workflow settings, actions and steps are explicitly
+allowlisted; extra jobs and overrides are refused. This can catch certain accidental
+policy regressions. A change to this checker itself still needs review. It is
 not Rust type checking, behavioral testing, or a security audit. The normal
 Windows build/test job is intentionally disabled; a green source-only workflow
 does not establish that the native code builds or that the launcher is safe.

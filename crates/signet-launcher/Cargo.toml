@@ -1,0 +1,36 @@
+[package]
+name = "signet-launcher"
+version = "0.1.0"
+edition = "2024"
+publish = false
+license = "GPL-3.0-or-later"
+description = "Signet for FFXI: native launcher window (WebView2 + Mica) for retail FINAL FANTASY XI (PlayOnline) and the Signet zone viewer"
+
+[[bin]]
+name = "signet-launcher"
+path = "src/main.rs"
+
+[dependencies]
+signet-dat = { path = "../signet-dat" }
+signet-patch = { path = "../signet-patch" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[target.'cfg(windows)'.dependencies]
+wry = { version = "0.57", default-features = false, features = ["os-webview"] }
+tao = { version = "0.37", default-features = false, features = ["rwh_06"] }
+window-vibrancy = "0.8"
+windows = { version = "=0.62.2", features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Dwm",
+    "Win32_Security_Cryptography",
+    "Win32_System_Diagnostics_ToolHelp",
+    "Win32_System_Registry",
+    "Win32_System_Threading",
+    "Win32_UI_Controls",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
+] }
+
+[dev-dependencies]
+signet-patch = { path = "../signet-patch", features = ["fake-server"] }

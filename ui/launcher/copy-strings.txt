@@ -1,0 +1,17 @@
+Home. Retail client. Zones. Settings. Mods. PlayOnline opened. Signet could not start. Signet. FINAL FANTASY XI. Zone viewer. Zone X. Browser preview.
+
+Opening PlayOnline. Checking. PlayOnline running. PlayOnline not found. Client out of date. Client up to date. Version unknown. Update through PlayOnline: Play, then FINAL FANTASY XI, then Play.
+
+Retail and PlayOnline. Installed build Apr 30, 2019. Installed build unknown. Reading the install. PlayOnline is open. Close it there to play again. Play FINAL FANTASY XI. East Sarutabaruta, drawn by Signet. Change zone. Zone viewer running. Zone viewer, offline. Unknown zone. Loading zones. Last run exited (1). Camera. Camera mode. Retail. Free. Speed. Movement speed. Slower. Faster. Closing. Close viewer. Opening. Explore. Zones to explore. Select West Ronfaure.
+
+PlayOnline is running. Process X. Play opens again once it closes. No pol.exe in the PlayOnline folder. Reinstall PlayOnline or FINAL FANTASY XI. Client is out of date. Installed build Apr 30, 2019. PlayOnline last updated Oct 22, 2026. Client looks current. PlayOnline checks for updates when it starts. patch.cfg in the install could not be read. SHA-256 copied. Copy failed. Opens PlayOnline. Windows asks for approval, then you sign in as usual. Open folder. Version. Build date. FFXiMain.dll. SHA-256. Copy SHA-256. Last update. pol.exe. Found. Missing. State. Running. Closed.
+
+Zones. 287 in this install, offline viewer. Filter. All. Favorites. Recent. Search zones. Search by name or id. Open in viewer. Selected. Has zone art. Star a zone to pin it here. Zones you explore show up here. 0 zones match. Selected zone. Zone X, no image yet. Select. Explore here. Pick a zone from the list.
+
+Appearance. Theme. System follows Windows. System. Light. Dark. Retail follows the character. Free flies anywhere. Even steps, like gear and buffs. Resolution. Windowed only for now. Folders. FFXI install. Read only. Settings file.
+
+Coming soon. Mods live in the 32-bit runtime. They move here once the 64-bit client can load them.
+
+The Signet bridge is unavailable. Browser preview: this action runs only in the Signet window.
+
+PlayOnline is already running. PlayOnline was not found. Windows approval was canceled. Could not start pol.exe. Windows started PlayOnline without a process handle. The zone viewer is already open. signet-render.exe was not found next to the launcher or in the target folder. Zone X is not in this install. The launcher UI is not built. Run npm install and npm run build in ui/launcher, then rebuild signet-launcher. Unknown folder. Unsupported resolution.

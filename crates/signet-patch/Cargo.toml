@@ -1,0 +1,27 @@
+[package]
+name = "signet-patch"
+version = "0.1.0"
+edition = "2024"
+publish = false
+license = "GPL-3.0-or-later"
+description = "Signet for FFXI: retail patcher that updates FINAL FANTASY XI from Square Enix's patch server without PlayOnline Viewer"
+
+[dependencies]
+md-5 = "0.10"
+miniz_oxide = "0.8"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "=0.61.2", features = ["Win32_Foundation", "Win32_System_Registry", "Win32_System_Threading", "Win32_System_Diagnostics_ToolHelp"] }
+
+[[bin]]
+name = "signet-patch"
+path = "src/bin/signet-patch.rs"
+
+[features]
+# A local fake patch server and fake install for tests and screenshots. Never on in a release build.
+fake-server = []
+
+[[bin]]
+name = "signet-patch-fake"
+path = "src/bin/signet-patch-fake.rs"
+required-features = ["fake-server"]

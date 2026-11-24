@@ -1,0 +1,13 @@
+# Walk proof in ROM\0\101: start in the open, run 2 s forward, run into a wall, then slide along it.
+# Start: --actor -92,auto,77,270 (facing +x; the wall is at x -103).
+log
+shot walk-start.png
+hold w 120
+shot walk-after-2s-forward.png
+hold w 180
+cam 0 -30 9          # look from the side so the wall is visible next to the character
+shot walk-into-wall.png
+cam 270 -15 8
+hold wd 120
+cam 0 -30 9
+shot walk-slide-along-wall.png
