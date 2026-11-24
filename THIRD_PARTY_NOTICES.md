@@ -68,3 +68,42 @@ Generated Rust COM declarations preserve this attribution.
 No original Wine header is bundled. Upstream LGPL-2.1 terms:
 https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
 The public export includes the LGPL-3.0 supplement under licenses/.
+
+## Replacement client crates and launcher UI
+
+Applies to `crates/signet-dat`, `crates/signet-render`, `crates/signet-launcher`,
+`crates/signet-parity`, `crates/signet-patch` and `ui/launcher`. Their Rust dependencies are
+pinned in Cargo.lock and the UI's in `ui/launcher/package-lock.json`; each keeps its own license
+and the package files carry the full texts.
+
+Direct Rust dependencies (licenses from `cargo metadata`):
+
+- `ash` 0.38 (Vulkan bindings): MIT OR Apache-2.0.
+- `naga` 25 (build script only; compiles the WGSL shader to SPIR-V): MIT OR Apache-2.0.
+- `windows` 0.62.2 and `windows-sys` 0.61.2 (Microsoft Win32 bindings): MIT OR Apache-2.0.
+- `wry` 0.57 (WebView2 host) and `tao` 0.37 (window): Apache-2.0 OR MIT (`tao`: Apache-2.0).
+- `window-vibrancy` 0.8 (Mica backdrop): Apache-2.0 OR MIT.
+- `md-5` 0.10 (patch file check values): MIT OR Apache-2.0.
+- `miniz_oxide` 0.8 (patch file decompression): MIT OR Zlib OR Apache-2.0.
+- `serde` 1 and `serde_json` 1: MIT OR Apache-2.0.
+
+The Windows build of these crates pulls no MPL-2.0 packages; a few MPL-2.0 crates in
+Cargo.lock (`cssparser`, `selectors`, `option-ext` and similar) come only from non-Windows
+targets of `wry` and `tao`.
+
+Launcher UI (bundled into `ui/launcher/dist` by Vite): `react` 19.3.1 and `react-dom` 19.3.1 (MIT).
+Build and test tooling only, not shipped: `vite` 8.3.4 (MIT) and `playwright-core` 1.61.1 (Apache-2.0).
+
+File-format and protocol sources. No code was copied from any of these; the decoders and the
+patcher were written from scratch and checked against a local install:
+
+- galkareeve/ffxi (2016 C++ map viewer, no license): read to understand the MMB/MZB
+  obfuscation scheme and the zone mesh and placement layouts.
+- jondwillis/kuluu-ffxi (GPL-3.0): read for ideas on the patch-server frame layout and
+  catalog formats. No Kuluu code is used.
+- GordianXI (MIT), VanaCore (GPL-3.0) and VanaView (MIT): design ideas only.
+- Movement speed values follow the public bg-wiki "Movement Speed" page.
+
+The 256-byte tables that de-obfuscate zone chunks are not stored in this repository.
+`signet-dat` finds them in your own `FFXiMain.dll` at run time using a byte-sum and hash
+fingerprint. FINAL FANTASY XI and its files belong to Square Enix; none are included.
